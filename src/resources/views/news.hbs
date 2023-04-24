@@ -1,0 +1,20 @@
+<div class="mt-2">
+
+    {{#each news}}
+    <div class="row mt-4">
+        <div class="col-lg-4">
+            <a href="/news/{{this.slug}}">
+                <img src="{{this.image}}" alt="" style="width: 370px; height: 230px;">
+            </a>
+        </div>
+
+        <div class="col-lg-8">
+            <a href="/news/{{this.slug}}">
+                <h3>{{this.title}}</h3>
+            </a>
+
+            <p>{{this.description}}</p>
+        </div>
+    </div>
+    {{/each}}
+</div>

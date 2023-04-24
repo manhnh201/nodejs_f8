@@ -1,0 +1,175 @@
+<form class="mt-2" name="container-form" method="POST" action="/news/handle-form-actions">
+    <div>
+        <h3 class="text-center">Tin tức đã xóa</h3>
+        <a class="btn btn-success" href="/me/stored/news"><i class="fa-solid fa-list"></i> Danh sách tin tức</a>
+
+        <div class="mt-2 d-flex align-items-center">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+                <label class="form-check-label" for="checkbox-all">
+                    Chọn tất cả
+                </label>
+            </div>
+
+            <select class="form-control form-control-sm checkbox-select-all-options" name="action" required>
+                <option value="">-- Chọn hành động --</option>
+                <option value="restore">Khôi phục</option>
+                <option value="forceDelete">Xóa vĩnh viễn</option>
+            </select>
+
+            <button class="btn btn-primary btn-sm check-all-submit-btn disabled">Thực hiện</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-hover  mt-2">
+        <thead>
+            <tr>
+                <th></th>
+                <th scope="col">STT</th>
+                <th scope="col">Tiêu đề</th>
+                <th scope="col">Ảnh</th>
+                <th scope="col">Nội dung</th>
+                <th scope="col">Thời gian xóa</th>
+                <th scope="col">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {{#each news}}
+            <tr>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="newIds[]" value="{{this._id}}">
+                    </div>
+                </td>
+                <th scope="row">{{sum @index 1}}</th>
+                <td>{{this.title}}</td>
+                <td><img src="{{this.image}}" alt="" style="width: 100px; height: 100px;"></td>
+                <td>{{this.description}}</td>
+                <td>{{this.deletedAt}}</td>
+                <td>
+                    <a href="" class="btn btn-primary btn-restore-new" data-id="{{this._id}}"><i
+                            class="fa-solid fa-trash-can-arrow-up"></i> Khôi
+                        phục</a>
+                    <a href="" class="btn btn-danger" data-toggle="modal" data-id="{{this._id}}"
+                        data-target="#delete-new-modal"><i class="fa-solid fa-trash"></i> Xóa vĩnh viễn</a>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="6" class="text-center">
+                    Thùng rác trống.
+
+                    <a href="/me/stored/news">Danh sách tin tức</a>
+                </td>
+            </tr>
+
+            {{/each}}
+        </tbody>
+    </table>
+</form>
+
+{{!-- Confirm delete new --}}
+<div class="modal" id="delete-new-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông báo!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn chắc chắn muốn xóa vĩnh viễn ? </p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-delete-new" type="button" class="btn btn-danger">Xóa bỏ</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<form name="delete-new-form" method="POST"></form>
+<form name="restore-new-form" method="POST"></form>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var newId;
+        var deleteForm = document.forms['delete-new-form']
+        var restoreForm = document.forms['restore-new-form']
+        var btnDeleteNew = document.getElementById('btn-delete-new')
+        var btnRestoreNew = $('.btn-restore-new')
+        var containerForm = $('form[name="container-form"]');
+        var checkboxAll = $('#checkbox-all')
+        var newItemCheckbox = $('input[name="newIds[]"]')
+        var checkAllSubmitBtn = $('.check-all-submit-btn')
+
+        // when dialog confirm lick
+        $('#delete-new-modal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget)
+            newId = button.data('id')
+        })
+
+        // when delete new btn lick
+        btnDeleteNew.onclick = function () {
+            deleteForm.action = '/news/' + newId + '/force?_method=DELETE';
+            deleteForm.submit();
+        }
+
+        // Restore btn clicked
+        btnRestoreNew.click(function (e) {
+            e.preventDefault();
+
+            var newId = $(this).data('id');
+            restoreForm.action = '/news/' + newId + '/restore?_method=PATCH';
+            restoreForm.submit();
+        });
+
+        //checkbox all click
+        checkboxAll.change(function () {
+            var isCheckedAll = $(this).prop('checked')
+
+            newItemCheckbox.prop('checked', isCheckedAll)
+            renderCheckAllSubmitBtn()
+        })
+
+        //new item checkbox change
+        newItemCheckbox.change(function () {
+            var isCheckedAll = newItemCheckbox.length === $('input[name="newIds[]"]:checked').length
+
+            checkboxAll.prop('checked', isCheckedAll)
+            renderCheckAllSubmitBtn()
+        })
+
+        //check all submit button clicked
+        checkAllSubmitBtn.on('submit', function (e) {
+            var isSubmitable = !$(this).hasClass('disabled');
+
+            if (!isSubmitable) {
+                e.preventDefault()
+            }
+        })
+
+        //Re-render check all submit button
+        function renderCheckAllSubmitBtn() {
+            var checkedCount = $('input[name="newIds[]"]:checked').length
+
+            if (checkedCount > 0) {
+                checkAllSubmitBtn.removeClass('disabled')
+            } else {
+                checkAllSubmitBtn.addClass('disabled')
+            }
+        }
+    })
+</script>
+
+<style>
+    .checkbox-select-all-options {
+        width: 180px;
+        margin: 0 8px;
+    }
+</style>

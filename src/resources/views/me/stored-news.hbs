@@ -1,0 +1,157 @@
+<form name="container-form" method="POST" class="mt-2" action="/news/handle-form-actions">
+    <div>
+        <h3 class="text-center">Quản lý tin tức</h3>
+        <a style="color: white;" class="btn btn-success" href="/news/create"><i class="fa-sharp fa-solid fa-plus"></i>
+            Đăng tin tức</a>
+        {{!-- {{#if deletedCount}} --}}
+        <a class="btn btn-danger" style="color: white;" href="/me/trash/news"><i class="fa-solid fa-trash-can"></i>
+            Thùng rác ({{deletedCount}})</a>
+        {{!-- {{/if}} --}}
+
+        <div class="mt-2 d-flex align-items-center">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+                <label class="form-check-label" for="checkbox-all">
+                    Chọn tất cả
+                </label>
+            </div>
+
+            <select class="form-control form-control-sm checkbox-select-all-options" name="action" required>
+                <option value="">-- Chọn hành động --</option>
+                <option value="delete">Xóa</option>
+            </select>
+
+            <button class="btn btn-primary btn-sm check-all-submit-btn" disabled>Thực hiện</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-hover  mt-2">
+        <thead>
+            <tr>
+                <th></th>
+                <th scope="col">STT</th>
+                <th scope="col">Tiêu đề</th>
+                <th scope="col">Ảnh</th>
+                <th scope="col">Nội dung</th>
+                <th scope="col">Thời gian tạo</th>
+                <th scope="col">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {{#each news}}
+            <tr>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="newIds[]" value="{{this._id}}">
+                    </div>
+                </td>
+                <th scope="row">{{sum @index 1}}</th>
+                <td>{{this.title}}</td>
+                <td><img src="{{this.image}}" alt="" style="width: 100px; height: 100px;"></td>
+                <td>{{this.description}}</td>
+                <td>{{this.createdAt}}</td>
+                <td>
+                    <a href="/news/{{this._id}}/edit" class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i>
+                        Sửa</a>
+                    <a href="" class="btn btn-danger" data-toggle="modal" data-id="{{this._id}}"
+                        data-target="#delete-new-modal"><i class="fa-solid fa-trash"></i> Xóa</a>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="6" class="text-center">
+                    Bạn chưa đăng tin tức nào.
+
+                    <a href="/news/create">Đăng tin tức</a>
+                </td>
+            </tr>
+
+            {{/each}}
+        </tbody>
+    </table>
+</form>
+
+{{!-- Confirm delete new --}}
+<div class="modal" id="delete-new-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông báo!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn chắc chắn muốn xóa ?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-delete-new" type="button" class="btn btn-danger">Xóa bỏ</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{!-- Delete hidden form --}}
+<form name="delete-new-form" method="POST"></form>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var newId;
+        var deleteForm = document.forms['delete-new-form']
+        var btnDeleteNew = document.getElementById('btn-delete-new')
+        var containerForm = $('form[name="container-form"]');
+        var checkboxAll = $('#checkbox-all')
+        var newItemCheckbox = $('input[name="newIds[]"]')
+        var checkAllSubmitBtn = $('.check-all-submit-btn')
+
+        // when dialog confirm lick
+        $('#delete-new-modal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget)
+            newId = button.data('id')
+        })
+
+        // when delete new btn lick
+        btnDeleteNew.onclick = function () {
+            deleteForm.action = '/news/' + newId + '?_method=DELETE';
+            deleteForm.submit();
+        }
+
+        // checkbox all click
+        checkboxAll.change(function () {
+            var isCheckedAll = $(this).prop('checked')
+
+            newItemCheckbox.prop('checked', isCheckedAll)
+            renderCheckAllSubmitBtn()
+        })
+
+        // new item checkbox change
+        newItemCheckbox.change(function () {
+            var isCheckedAll = newItemCheckbox.length === $('input[name="newIds[]"]:checked').length
+
+            checkboxAll.prop('checked', isCheckedAll)
+            renderCheckAllSubmitBtn()
+        })
+
+        //Re-render check all submit button
+        function renderCheckAllSubmitBtn() {
+            var checkedCount = $('input[name="newIds[]"]:checked').length
+
+            if (checkedCount > 0) {
+                checkAllSubmitBtn.attr('disabled', false)
+            } else {
+                checkAllSubmitBtn.attr('disabled', true)
+            }
+        }
+    })
+</script>
+
+<style>
+    .checkbox-select-all-options {
+        width: 180px;
+        margin: 0 8px;
+    }
+</style>

@@ -1,0 +1,63 @@
+<div class="mt-2">
+    <div class="row">
+
+        {{#each products}}
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-product-item">
+                <a href="/products/{{this.slug}}">
+                    <img class="mt-2 card-img-top" src="{{this.image}}" alt="{{this.name}}">
+                </a>
+                <div class="card-body">
+                    <a href="/products/{{this.slug}}">
+                        <h5 class="card-title">{{this.name}}</h5>
+                    </a>
+                    <p class="card-text">{{this.description}}</p>
+                    <div>
+                        <span style="color: red">{{this.price_new}}</span>
+                        &nbsp;
+                        <del style="color:black">{{this.price_old}}</del>
+                    </div>
+                    </p>
+                    <a href="/products/{{this.slug}}" class="btn btn-info">Mua
+                        ngay</a>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+
+    <nav class="mt-3" aria-label="...">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                    <span class="sr-only">(current)</span>
+                </span>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    .card-product-item {
+        margin-top: 10px;
+    }
+
+    .card-img-top {
+        padding: 10px;
+        transition: transform .2s;
+        margin: 0 auto;
+    }
+
+    .card-img-top:hover {
+        transform: scale(1.1);
+    }
+</style>
